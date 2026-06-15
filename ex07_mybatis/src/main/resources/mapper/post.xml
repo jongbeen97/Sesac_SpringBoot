@@ -40,7 +40,7 @@
      u.email, u.nickname, u.created_at AS user_created_at
     FROM users u
     INNER JOIN posts p ON u.id = p.user_id
-    ORDER BY post_id DESC
+    ORDER BY post_id ${sort}
     LIMIT #{offset}, #{size}
   </select>
 
