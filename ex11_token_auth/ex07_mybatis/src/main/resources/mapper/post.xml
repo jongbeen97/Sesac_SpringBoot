@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mybatis.mapper.PostMapper">
+
+  <!-- 모든 SELECT 태그는 결과 타입(resultType, resultMap) 명시가 필요합니다. -->
+
+  <resultMap id="postWithUser" type="Post">
+    <id property = "id" column="post_id"/>
+    <result property="userId" column="user_id"/>
+    <result property="title" column="title"/>
+    <result property="content" column="content"/>
+    <result property="createdAt" column="post_created_at"/>
+    <association property="user" javaType="User">
+      <id property="id" column="user_id"/>
+      <result property="email" column="email"/>
+      <result property="nickname" column="nickname"/>
+      <result property="createdAt" column="user_created_at"/>
+    </association>
+  </resultMap>
+
+  <select id="countAll" resultType="long">
+    SELECT COUNT(*) FROM posts
+  </select>
+
+  <select id="findById" resultMap="postWithUser">
+  SELECT
+    p.id AS post_id, p.user_id, p.title, p.content, p.created_at AS post_created_at,
+    u.email, u.nickname, u.created_at AS user_created_at
+  FROM users u
+  INNER JOIN posts p ON u.id = p.user_id
+  WHERE p.id = #{id}
+  </select>
+
+  <!-- 전체 조회 (findAll) -->
+    <!-- 최근 개시글 먼저 조회 (정렬) -->
+  <select id="findAll" resultMap="postWithUser">
+    SELECT
+     p.id AS post_id, p.user_id, p.title, p.content, p.created_at AS post_created_at,
+     u.email, u.nickname, u.created_at AS user_created_at
+    FROM users u
+    INNER JOIN posts p ON u.id = p.user_id
+    ORDER BY post_id ${sort}
+    LIMIT #{offset}, #{size}
+  </select>
+
+  <insert id="save" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO posts (user_id, title, content)
+    VALUES (#{userId},#{title},#{content})
+  </insert>
+
+  <update id="update">
+    UPDATE posts 
+    SET title = #{title},
+        content = #{content}
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM posts
+    WHERE id = #{id}
+  </delete>
+
+</mapper>
